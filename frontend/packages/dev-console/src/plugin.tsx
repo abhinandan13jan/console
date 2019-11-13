@@ -27,7 +27,13 @@ import {
   getPipelinesAndPipelineRunsForResource,
 } from './utils/pipeline-plugin-utils';
 import { FLAG_OPENSHIFT_PIPELINE, ALLOW_SERVICE_BINDING } from './const';
-import { newPipelineTemplate } from './templates';
+import {
+  newPipelineTemplate,
+  newTaskTemplate,
+  newTaskRunTemplate,
+  newPipelineResourceTemplate,
+  newClusterTaskTemplate,
+} from './templates';
 
 const {
   ClusterTaskModel,
@@ -314,6 +320,16 @@ const plugin: Plugin<ConsumedExtensions> = [
     },
   },
   {
+    type: 'Page/Resource/Details',
+    properties: {
+      model: TaskRunModel,
+      loader: async () =>
+        (await import(
+          './components/taskruns/TaskRunDetailsPage' /* webpackChunkName: "taskrun-details" */
+        )).default,
+    },
+  },
+  {
     type: 'Perspective',
     properties: {
       id: 'dev',
@@ -481,6 +497,34 @@ const plugin: Plugin<ConsumedExtensions> = [
     properties: {
       model: PipelineModel,
       template: newPipelineTemplate,
+    },
+  },
+  {
+    type: 'YAMLTemplate',
+    properties: {
+      model: TaskModel,
+      template: newTaskTemplate,
+    },
+  },
+  {
+    type: 'YAMLTemplate',
+    properties: {
+      model: TaskRunModel,
+      template: newTaskRunTemplate,
+    },
+  },
+  {
+    type: 'YAMLTemplate',
+    properties: {
+      model: PipelineResourceModel,
+      template: newPipelineResourceTemplate,
+    },
+  },
+  {
+    type: 'YAMLTemplate',
+    properties: {
+      model: ClusterTaskModel,
+      template: newClusterTaskTemplate,
     },
   },
 ];

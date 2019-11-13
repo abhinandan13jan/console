@@ -1,11 +1,18 @@
 import * as _ from 'lodash';
-import { K8sResourceKind, modelFor, RouteKind, DeploymentKind } from '@console/internal/module/k8s';
+import {
+  K8sResourceKind,
+  modelFor,
+  RouteKind,
+  DeploymentKind,
+  referenceFor,
+} from '@console/internal/module/k8s';
 import { getRouteWebURL } from '@console/internal/components/routes';
-import { TransformResourceData, isKnativeServing, deploymentKindMap } from '@console/shared';
+import { TransformResourceData, isKnativeServing } from '@console/shared';
 import { getImageForIconClass } from '@console/internal/components/catalog/catalog-item-icon';
 import {
   tranformKnNodeData,
   filterNonKnativeDeployments,
+  NodeType,
 } from '@console/knative-plugin/src/utils/knative-topology-utils';
 import {
   edgesFromAnnotations,
@@ -151,14 +158,19 @@ export const createTopologyNodeData = (
  * create node data for graphs
  * @param dc resource
  */
-const getTopologyNodeItem = (dc: K8sResourceKind): Node => {
+export const getTopologyNodeItem = (
+  dc: K8sResourceKind,
+  type?: string,
+  children?: string[],
+): Node => {
   const uid = _.get(dc, ['metadata', 'uid']);
   const name = _.get(dc, ['metadata', 'name']);
   const label = _.get(dc, ['metadata', 'labels', 'app.openshift.io/instance']);
   return {
     id: uid,
-    type: 'workload',
+    type: type || 'workload',
     name: label || name,
+    ...(children && children.length && { children }),
   };
 };
 
@@ -171,6 +183,7 @@ const getTopologyEdgeItems = (
   dc: K8sResourceKind,
   resources: K8sResourceKind[],
   sbrs: K8sResourceKind[],
+  application?: string,
 ): Edge[] => {
   const annotations = _.get(dc, 'metadata.annotations');
   const edges = [];
@@ -182,7 +195,12 @@ const getTopologyEdgeItems = (
         const name =
           _.get(deployment, ['metadata', 'labels', 'app.kubernetes.io/instance']) ||
           deployment.metadata.name;
-        return name === edge;
+        const appGroup = _.get(
+          deployment,
+          ['metadata', 'labels', 'app.kubernetes.io/part-of'],
+          null,
+        );
+        return name === edge && (!application || application === appGroup);
       }),
       ['metadata', 'uid'],
     );
@@ -291,9 +309,13 @@ export const transformTopologyData = (
    * form data model specific to knative resources
    */
   const getKnativeTopologyData = (knativeResources: K8sResourceKind[], type: string) => {
-    if (knativeResources && knativeResources.length) {
+    const activeAppKnResource =
+      type !== NodeType.Revision
+        ? filterBasedOnActiveApplication(knativeResources, application)
+        : knativeResources;
+    if (activeAppKnResource && activeAppKnResource.length) {
       const knativeResourceData = tranformKnNodeData(
-        knativeResources,
+        activeAppKnResource,
         type,
         topologyGraphAndNodeData,
         resources,
@@ -329,11 +351,11 @@ export const transformTopologyData = (
   };
 
   const knSvcResources: K8sResourceKind[] = _.get(resources, ['ksservices', 'data'], []);
-  knSvcResources.length && getKnativeTopologyData(knSvcResources, 'knative-service');
+  knSvcResources.length && getKnativeTopologyData(knSvcResources, NodeType.KnService);
   const knEventSources: K8sResourceKind[] = getKnativeEventSources();
-  knEventSources.length && getKnativeTopologyData(knEventSources, 'event-source');
+  knEventSources.length && getKnativeTopologyData(knEventSources, NodeType.EventSource);
   const knRevResources: K8sResourceKind[] = _.get(resources, ['revisions', 'data'], []);
-  knRevResources.length && getKnativeTopologyData(knRevResources, 'knative-revision');
+  knRevResources.length && getKnativeTopologyData(knRevResources, NodeType.Revision);
   const deploymentResources: DeploymentKind[] = _.get(resources, ['deployments', 'data'], []);
   resources.deployments.data = filterNonKnativeDeployments(deploymentResources);
   // END: kn call to form topology data
@@ -349,15 +371,12 @@ export const transformTopologyData = (
   );
 
   _.forEach(transformBy, (key) => {
-    if (!deploymentKindMap[key]) {
-      throw new Error(`Invalid target deployment resource: (${key})`);
-    }
     if (!_.isEmpty(resources[key].data)) {
       // filter data based on the active application
       const resourceData = filterBasedOnActiveApplication(resources[key].data, application);
       let nodesData = [];
       let edgesData = [];
-      let groupsData = [];
+      let groupsData = topologyGraphAndNodeData.graph.groups;
       const dataToShowOnNodes = {};
 
       transformResourceData[key](resourceData).forEach((item) => {
@@ -368,7 +387,12 @@ export const transformTopologyData = (
           nodesData = [...nodesData, getTopologyNodeItem(deploymentConfig)];
           edgesData = [
             ...edgesData,
-            ...getTopologyEdgeItems(deploymentConfig, allResources, serviceBindingRequests),
+            ...getTopologyEdgeItems(
+              deploymentConfig,
+              allResources,
+              serviceBindingRequests,
+              application,
+            ),
           ];
           groupsData = [
             ...getTopologyGroupItems(deploymentConfig, topologyGraphAndNodeData.graph.groups),
@@ -392,9 +416,7 @@ export const transformTopologyData = (
   return topologyGraphAndNodeData;
 };
 
-export const getResourceDeploymentObject = (
-  topologyObject: TopologyDataObject,
-): K8sResourceKind => {
+export const getTopologyResourceObject = (topologyObject: TopologyDataObject): K8sResourceKind => {
   if (!topologyObject) {
     return null;
   }
@@ -409,8 +431,15 @@ export const updateTopologyResourceApplication = (
     return Promise.reject();
   }
 
-  const resource = getResourceDeploymentObject(item);
-  return updateResourceApplication(modelFor(resource.kind), resource, application);
+  const resource = getTopologyResourceObject(item);
+
+  const resourceKind = modelFor(referenceFor(resource));
+  if (!resourceKind) {
+    return Promise.reject(
+      new Error(`Unable to update application, invalid resource type: ${resource.kind}`),
+    );
+  }
+  return updateResourceApplication(resourceKind, resource, application);
 };
 
 export const createTopologyResourceConnection = (
@@ -423,9 +452,9 @@ export const createTopologyResourceConnection = (
     return Promise.reject();
   }
 
-  const sourceObj = getResourceDeploymentObject(source);
-  const targetObj = getResourceDeploymentObject(target);
-  const replaceTargetObj = replaceTarget && getResourceDeploymentObject(replaceTarget);
+  const sourceObj = getTopologyResourceObject(source);
+  const targetObj = getTopologyResourceObject(target);
+  const replaceTargetObj = replaceTarget && getTopologyResourceObject(replaceTarget);
 
   if (serviceBindingFlag && target.operatorBackedService) {
     return createServiceBinding(sourceObj, targetObj);
@@ -444,8 +473,8 @@ export const removeTopologyResourceConnection = (
     return Promise.reject();
   }
 
-  const sourceObj = getResourceDeploymentObject(source);
-  const targetObj = getResourceDeploymentObject(target);
+  const sourceObj = getTopologyResourceObject(source);
+  const targetObj = getTopologyResourceObject(target);
 
   if (edgeType === 'service-binding') {
     return removeServiceBinding(sbr);

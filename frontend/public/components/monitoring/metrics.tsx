@@ -632,7 +632,7 @@ const QueryTable_: React.FC<QueryTableProps> = ({
     setData(undefined);
     setError(undefined);
     setPage(1);
-  }, [query]);
+  }, [namespace, query]);
 
   if (!isEnabled || !isExpanded || !query) {
     return null;
@@ -829,6 +829,7 @@ const Query_: React.FC<QueryProps> = ({
             aria-label={switchLabel}
             id={id}
             isChecked={isEnabled}
+            key={id}
             onChange={toggleIsEnabled}
           />
         </div>
@@ -888,7 +889,12 @@ const QueryBrowserWrapper_: React.FC<QueryBrowserWrapperProps> = ({
 
   const insertExampleQuery = () => {
     const index = _.get(focusedQuery, 'index', 0);
-    const text = 'sum(sort_desc(sum_over_time(ALERTS{alertstate="firing"}[24h]))) by (alertname)';
+
+    // Pick a suitable example query based on whether we are limiting results to a single namespace
+    const text = namespace
+      ? 'sum(rate(container_cpu_usage_seconds_total{image!="", container!="POD"}[5m])) by (pod)'
+      : 'sum(sort_desc(sum_over_time(ALERTS{alertstate="firing"}[24h]))) by (alertname)';
+
     patchQuery(index, { isEnabled: true, query: text, text });
   };
 
@@ -944,17 +950,15 @@ const RunQueriesButton = connect(
   { runQueries: UIActions.queryBrowserRunQueries },
 )(RunQueriesButton_);
 
-const QueriesList_ = ({ ids, namespace }) => (
+const QueriesList_ = ({ count, namespace }) => (
   <>
-    {_.map(ids, (id, i) => (
-      <Query index={i} key={id} namespace={namespace} />
+    {_.range(count).map((i) => (
+      <Query index={i} key={i} namespace={namespace} />
     ))}
   </>
 );
 const QueriesList = connect(({ UI }: RootState) => ({
-  ids: UI.getIn(['queryBrowser', 'queries'])
-    .map((q) => q.get('id'))
-    .toArray(),
+  count: UI.getIn(['queryBrowser', 'queries']).size,
 }))(QueriesList_);
 
 const TechPreview = () => (

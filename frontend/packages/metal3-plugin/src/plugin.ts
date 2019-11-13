@@ -43,7 +43,7 @@ const plugin: Plugin<ConsumedExtensions> = [
     type: 'NavItem/ResourceNS',
     properties: {
       section: 'Compute',
-      mergeAfter: 'Machine Autoscalers',
+      mergeAfter: 'Machine Health Checks',
       componentProps: {
         name: 'Bare Metal Hosts',
         resource: referenceForModel(BareMetalHostModel),
@@ -80,6 +80,7 @@ const plugin: Plugin<ConsumedExtensions> = [
         import(
           './components/baremetal-hosts/add-baremetal-host/AddBareMetalHostPage' /* webpackChunkName: "metal3-baremetalhost" */
         ).then((m) => m.default),
+      required: [FLAGS.BAREMETAL, METAL3_FLAG],
     },
   },
   {
@@ -105,6 +106,7 @@ const plugin: Plugin<ConsumedExtensions> = [
           isList: true,
           kind: referenceForModel(NodeMaintenanceModel),
           prop: 'maintenaces',
+          optional: true,
         },
       ],
       model: BareMetalHostModel,
@@ -121,6 +123,7 @@ const plugin: Plugin<ConsumedExtensions> = [
         import(
           './components/baremetal-nodes/BareMetalNodesPage' /* webpackChunkName: "node" */
         ).then((m) => m.default),
+      required: [FLAGS.BAREMETAL, METAL3_FLAG],
     },
   },
   {
@@ -132,6 +135,7 @@ const plugin: Plugin<ConsumedExtensions> = [
         import(
           './components/baremetal-nodes/BareMetalNodeDetailsPage' /* webpackChunkName: "node" */
         ).then((m) => m.default),
+      required: [FLAGS.BAREMETAL, METAL3_FLAG],
     },
   },
 ];

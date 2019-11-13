@@ -19,7 +19,7 @@ import EventSource from './components/nodes/EventSource';
 import EventSourceLink from './components/edges/EventSourceLink';
 import WorkloadNode from './components/nodes/WorkloadNode';
 import GraphComponent from './components/GraphComponent';
-import { workloadContextMenu, groupContextMenu } from './nodeContextMenu';
+import { workloadContextMenu, groupContextMenu, nodeContextMenu } from './nodeContextMenu';
 import {
   graphWorkloadDropTargetSpec,
   nodeDragSourceSpec,
@@ -80,7 +80,7 @@ class ComponentFactory {
           return withDragNode(nodeDragSourceSpec(type))(
             withSelection(false, true)(
               withContextMenu(
-                workloadContextMenu,
+                nodeContextMenu,
                 document.getElementById('modal-container'),
                 'odc2-topology-context-menu',
               )(KnativeService),
@@ -90,29 +90,20 @@ class ComponentFactory {
           return withDragNode(nodeDragSourceSpec(type))(
             withSelection(false, true)(
               withContextMenu(
-                workloadContextMenu,
+                nodeContextMenu,
                 document.getElementById('modal-container'),
                 'odc2-topology-context-menu',
               )(EventSource),
             ),
           );
         case TYPE_KNATIVE_REVISION:
-          return withCreateConnector(createConnectorCallback(this.hasServiceBinding))(
-            withDndDrop<
-              any,
-              any,
-              { droppable?: boolean; hover?: boolean; canDrop?: boolean },
-              NodeProps
-            >(nodeDropTargetSpec)(
-              withDragNode(nodeDragSourceSpec(type))(
-                withSelection(false, true)(
-                  withContextMenu(
-                    workloadContextMenu,
-                    document.getElementById('modal-container'),
-                    'odc2-topology-context-menu',
-                  )(RevisionNode),
-                ),
-              ),
+          return withDragNode(nodeDragSourceSpec(type, false))(
+            withSelection(false, true)(
+              withContextMenu(
+                nodeContextMenu,
+                document.getElementById('modal-container'),
+                'odc2-topology-context-menu',
+              )(RevisionNode),
             ),
           );
         case TYPE_REVISION_TRAFFIC:
@@ -143,9 +134,7 @@ class ComponentFactory {
             withRemoveConnector(removeConnectorCallback)(ConnectsTo),
           );
         case TYPE_SERVICE_BINDING:
-          return withTargetDrag(edgeDragSourceSpec(this.hasServiceBinding))(
-            withRemoveConnector(removeConnectorCallback)(ServiceBinding),
-          );
+          return withRemoveConnector(removeConnectorCallback)(ServiceBinding);
         default:
           switch (kind) {
             case ModelKind.graph:

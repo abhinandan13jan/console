@@ -7,6 +7,8 @@ import {
   ServiceModel,
   EventSourceCronJobModel,
   EventSourceContainerModel,
+  EventSourceCamelModel,
+  EventSourceKafkaModel,
 } from '@console/knative-plugin';
 import { TopologyDataResources } from '../topology-types';
 
@@ -304,6 +306,9 @@ export const sampleKnativeServices: FirehoseResult = {
       apiVersion: `${ServiceModel.apiGroup}/${ServiceModel.apiVersion}`,
       kind: ServiceModel.kind,
       metadata: {
+        labels: {
+          'app.kubernetes.io/part-of': 'myapp',
+        },
         name: 'overlayimage',
         namespace: 'testproject3',
         selfLink: '/api/v1/namespaces/testproject3/services/overlayimage',
@@ -376,6 +381,54 @@ export const sampleEventSourceContainers: FirehoseResult = {
       spec: {
         sink: {
           apiVersion: 'serving.knative.dev/v1alpha1',
+          kind: 'Service',
+          name: 'overlayimage',
+        },
+      },
+    },
+  ],
+};
+
+export const sampleEventSourceCamel: FirehoseResult = {
+  loaded: true,
+  loadError: '',
+  data: [
+    {
+      apiVersion: `${EventSourceCamelModel.apiGroup}/${EventSourceCamelModel.apiVersion}`,
+      kind: EventSourceCamelModel.kind,
+      metadata: {
+        name: 'overlayimage',
+        namespace: 'testproject3',
+        uid: '1317f615-9636-11e9-b134-06a61d886b689',
+        creationTimestamp: '2019-06-12T07:07:57Z',
+      },
+      spec: {
+        sink: {
+          apiVersion: 'serving.knative.dev/v1beta1',
+          kind: 'Service',
+          name: 'overlayimage',
+        },
+      },
+    },
+  ],
+};
+
+export const sampleEventSourceKafka: FirehoseResult = {
+  loaded: true,
+  loadError: '',
+  data: [
+    {
+      apiVersion: `${EventSourceKafkaModel.apiGroup}/${EventSourceKafkaModel.apiVersion}`,
+      kind: EventSourceKafkaModel.kind,
+      metadata: {
+        name: 'overlayimage',
+        namespace: 'testproject3',
+        uid: '1317f615-9636-11e9-b134-06a61d886b689',
+        creationTimestamp: '2019-06-12T07:07:57Z',
+      },
+      spec: {
+        sink: {
+          apiVersion: 'serving.knative.dev/v1beta1',
           kind: 'Service',
           name: 'overlayimage',
         },
@@ -495,4 +548,6 @@ export const MockKnativeResources: TopologyDataResources = {
   pipelineRuns: samplePipelineRun,
   eventSourceCronjob: sampleEventSourceCronjob,
   eventSourceContainers: sampleEventSourceContainers,
+  eventSourceCamel: sampleEventSourceCamel,
+  eventSourceKafka: sampleEventSourceKafka,
 };

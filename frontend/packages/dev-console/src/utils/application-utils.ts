@@ -131,7 +131,12 @@ export const updateResourceApplication = (
   application: string,
 ): Promise<any> => {
   if (!resource) {
-    return Promise.reject();
+    return Promise.reject(new Error('Error: no resource provided to update application for.'));
+  }
+  if (!resourceKind) {
+    return Promise.reject(
+      new Error('Error: invalid resource kind provided for updating application.'),
+    );
   }
 
   const instanceName = _.get(resource, ['metadata', 'labels', 'app.kubernetes.io/instance']);
@@ -237,7 +242,9 @@ export const createServiceBinding = (
   const targetResourceGroup = _.split(_.get(target, 'metadata.ownerReferences[0].apiVersion'), '/');
   const targetResourceKind = _.get(target, 'metadata.ownerReferences[0].kind');
   const targetResourceRefName = _.get(target, 'metadata.ownerReferences[0].name');
-  const sbrName = `${sourceName}-${source.kind}-${targetName}-${target.kind}`;
+  const sbrName = `${sourceName}-${modelFor(source.kind).abbr}-${targetName}-${
+    modelFor(target.kind).abbr
+  }`;
 
   const serviceBindingRequest = {
     apiVersion: 'apps.openshift.io/v1alpha1',
@@ -259,6 +266,7 @@ export const createServiceBinding = (
         kind: targetResourceKind,
         resourceRef: targetResourceRefName,
       },
+      detectBindingResources: true,
     },
   };
 

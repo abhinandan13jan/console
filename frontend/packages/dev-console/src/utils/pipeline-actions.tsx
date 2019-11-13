@@ -7,6 +7,7 @@ import startPipelineModal from '../components/pipelines/pipeline-form/StartPipel
 import { getRandomChars } from '../components/pipelines/pipeline-resource/pipelineResource-utils';
 import { Pipeline, PipelineRun } from './pipeline-augment';
 import { pipelineRunFilterReducer } from './pipeline-filter-reducer';
+import { getPipelineRunParams } from './pipeline-utils';
 
 export const handlePipelineRunSubmit = (pipelineRun: PipelineRun) => {
   history.push(
@@ -37,6 +38,11 @@ export const getPipelineRunData = (
 
   const pipelineName = pipeline ? pipeline.metadata.name : latestRun.spec.pipelineRef.name;
 
+  const latestRunParams = _.get(latestRun, 'spec.params');
+  const pipelineParams = _.get(pipeline, 'spec.params');
+
+  const params = latestRunParams || getPipelineRunParams(pipelineParams);
+
   return {
     apiVersion: `${PipelineRunModel.apiGroup}/${PipelineRunModel.apiVersion}`,
     kind: PipelineRunModel.kind,
@@ -55,12 +61,7 @@ export const getPipelineRunData = (
         name: pipelineName,
       },
       resources,
-      params:
-        latestRun && latestRun.spec && latestRun.spec.params
-          ? latestRun.spec.params
-          : pipeline && pipeline.spec && pipeline.spec.params
-          ? pipeline.spec.params
-          : null,
+      ...(params && { params }),
       serviceAccount: latestRun && _.get(latestRun, ['spec', 'serviceAccount']),
     },
   };
@@ -78,19 +79,11 @@ export const triggerPipeline = (
 export const reRunPipelineRun: KebabAction = (kind: K8sKind, pipelineRun: PipelineRun) => ({
   label: 'Rerun',
   callback: () => {
-    if (
-      !pipelineRun ||
-      !pipelineRun.metadata ||
-      !pipelineRun.metadata.namespace ||
-      !pipelineRun.spec ||
-      !pipelineRun.spec.pipelineRef ||
-      !pipelineRun.spec.pipelineRef.name
-    ) {
-      // eslint-disable-next-line no-console
-      console.error('Improper PipelineRun metadata');
-      return;
+    const namespace = _.get(pipelineRun, 'spec.metadata.namespace');
+    const pipelineRef = _.get(pipelineRun, 'spec.spec.pipelineRef.name');
+    if (namespace && pipelineRef) {
+      k8sCreate(PipelineRunModel, getPipelineRunData(null, pipelineRun));
     }
-    k8sCreate(PipelineRunModel, getPipelineRunData(null, pipelineRun));
   },
   accessReview: {
     group: kind.apiGroup,
@@ -131,13 +124,32 @@ export const startPipeline: KebabAction = (
   },
 });
 
-export const rerunPipeline: KebabAction = (kind: K8sKind, pipelineRun: PipelineRun) => {
-  // The returned function will be called using the 'kind' and 'obj' in Kebab Actions
+type RerunPipelineData = {
+  onComplete?: (pipelineRun: PipelineRun) => void;
+};
+const rerunPipeline: KebabAction = (
+  kind: K8sKind,
+  pipelineRun: PipelineRun,
+  resources: any,
+  customData: RerunPipelineData = {},
+) => {
+  const { onComplete } = customData;
+
+  const sharedProps = { label: 'Start Last Run', accessReview: {} };
+
+  if (
+    !pipelineRun ||
+    !_.has(pipelineRun, 'metadata.name') ||
+    !_.has(pipelineRun, 'metadata.namespace')
+  ) {
+    return sharedProps;
+  }
+
   return {
-    label: 'Start Last Run',
+    ...sharedProps,
     callback: () => {
       k8sCreate(PipelineRunModel, getPipelineRunData(null, pipelineRun))
-        .then(handlePipelineRunSubmit)
+        .then(typeof onComplete === 'function' ? onComplete : () => {})
         .catch((err) => errorModal({ error: err.message }));
     },
     accessReview: {
@@ -148,6 +160,14 @@ export const rerunPipeline: KebabAction = (kind: K8sKind, pipelineRun: PipelineR
       verb: 'create',
     },
   };
+};
+
+export const rerunPipelineAndStay: KebabAction = (kind: K8sKind, pipelineRun: PipelineRun) => {
+  return rerunPipeline(kind, pipelineRun);
+};
+
+export const rerunPipelineAndRedirect: KebabAction = (kind: K8sKind, pipelineRun: PipelineRun) => {
+  return rerunPipeline(kind, pipelineRun, null, { onComplete: handlePipelineRunSubmit });
 };
 
 export const stopPipelineRun: KebabAction = (kind: K8sKind, pipelineRun: PipelineRun) => {

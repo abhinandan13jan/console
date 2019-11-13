@@ -861,6 +861,9 @@ const MonitoringListPage = connect(filtersToProps)(
 
       return (
         <>
+          <Helmet>
+            <title>Alerting</title>
+          </Helmet>
           <div className="co-m-nav-title">
             <PageDescription />
           </div>
@@ -1198,14 +1201,11 @@ class SilenceForm_ extends React.Component<SilenceFormProps, SilenceFormState> {
     const { data, error, inProgress } = this.state;
 
     return (
-      <div className="co-m-pane__body">
+      <div className="co-m-pane__body co-m-pane__form">
         <Helmet>
           <title>{title}</title>
         </Helmet>
-        <form
-          className="co-m-pane__body-group silence-form co-m-pane__form"
-          onSubmit={this.onSubmit}
-        >
+        <form className="co-m-pane__body-group silence-form" onSubmit={this.onSubmit}>
           <SectionHeading text={title} />
           <p className="co-m-pane__explanation">
             A silence is configured based on matchers (label selectors). No notification will be
@@ -1231,38 +1231,50 @@ class SilenceForm_ extends React.Component<SilenceFormProps, SilenceFormState> {
               label constraints, though they may have additional labels as well.
             </p>
             <div className="row monitoring-grid-head text-secondary text-uppercase">
-              <div className="col-xs-4">Name</div>
-              <div className="col-xs-4">Value</div>
+              <div className="col-xs-5">Name</div>
+              <div className="col-xs-6">Value</div>
             </div>
             {_.map(data.matchers, (matcher, i) => (
               <div className="row form-group" key={i}>
-                <div className="col-xs-4">
-                  <Text
-                    onChange={this.onFieldChange(`matchers[${i}].name`)}
-                    placeholder="Name"
-                    value={matcher.name}
-                    required
-                  />
+                <div className="col-xs-10">
+                  <div className="row">
+                    <div className="col-xs-6 pairs-list__name-field">
+                      <div className="form-group">
+                        <Text
+                          onChange={this.onFieldChange(`matchers[${i}].name`)}
+                          placeholder="Name"
+                          value={matcher.name}
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div className="col-xs-6 pairs-list__value-field">
+                      <div className="form-group">
+                        <Text
+                          onChange={this.onFieldChange(`matchers[${i}].value`)}
+                          placeholder="Value"
+                          value={matcher.value}
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="row">
+                    <div className="col-xs-12 col-sm-12">
+                      <div className="form-group">
+                        <label className="co-no-bold">
+                          <input
+                            type="checkbox"
+                            onChange={(e) => this.onIsRegexChange(e, i)}
+                            checked={matcher.isRegex}
+                          />
+                          &nbsp; Regular Expression
+                        </label>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="col-xs-4">
-                  <Text
-                    onChange={this.onFieldChange(`matchers[${i}].value`)}
-                    placeholder="Value"
-                    value={matcher.value}
-                    required
-                  />
-                </div>
-                <div className="col-xs-3">
-                  <label className="co-no-bold">
-                    <input
-                      type="checkbox"
-                      onChange={(e) => this.onIsRegexChange(e, i)}
-                      checked={matcher.isRegex}
-                    />
-                    &nbsp; Regular Expression
-                  </label>
-                </div>
-                <div className="col-xs-1">
+                <div className="col-xs-2 pairs-list__action">
                   <Button
                     type="button"
                     onClick={() => this.removeMatcher(i)}
@@ -1408,47 +1420,44 @@ const AlertingPage: React.SFC<AlertingPageProps> = ({ match }) => {
           </div>
         </h1>
       </div>
-      <div className="co-m-horizontal-nav__menu">
-        <ul className="co-m-horizontal-nav__menu-primary">
-          {(match.url === alertPath || match.url === silencePath) && (
-            <>
-              <li
-                className={classNames('co-m-horizontal-nav__menu-item', {
-                  'co-m-horizontal-nav-item--active': match.url === alertPath,
-                })}
-              >
-                <Link to={alertPath}>Alerts</Link>
-              </li>
-              <li
-                className={classNames('co-m-horizontal-nav__menu-item', {
-                  'co-m-horizontal-nav-item--active': match.url === silencePath,
-                })}
-              >
-                <Link to={silencePath}>Silences</Link>
-              </li>
-            </>
-          )}
-          {(match.url === ConfigPath || match.url === YAMLPath) && (
-            <>
-              <li
-                className={classNames('co-m-horizontal-nav__menu-item', {
-                  'co-m-horizontal-nav-item--active': match.url === ConfigPath,
-                })}
-              >
-                <Link to={ConfigPath}>Overview</Link>
-              </li>
-              <li
-                className={classNames('co-m-horizontal-nav__menu-item', {
-                  'co-m-horizontal-nav-item--active': match.url === YAMLPath,
-                })}
-              >
-                <Link to={YAMLPath}>YAML</Link>
-              </li>
-            </>
-          )}
-          <li className="co-m-horizontal-nav__menu-item co-m-horizontal-nav__menu-item--divider" />
-        </ul>
-      </div>
+      <ul className="co-m-horizontal-nav__menu">
+        {(match.url === alertPath || match.url === silencePath) && (
+          <>
+            <li
+              className={classNames('co-m-horizontal-nav__menu-item', {
+                'co-m-horizontal-nav-item--active': match.url === alertPath,
+              })}
+            >
+              <Link to={alertPath}>Alerts</Link>
+            </li>
+            <li
+              className={classNames('co-m-horizontal-nav__menu-item', {
+                'co-m-horizontal-nav-item--active': match.url === silencePath,
+              })}
+            >
+              <Link to={silencePath}>Silences</Link>
+            </li>
+          </>
+        )}
+        {(match.url === ConfigPath || match.url === YAMLPath) && (
+          <>
+            <li
+              className={classNames('co-m-horizontal-nav__menu-item', {
+                'co-m-horizontal-nav-item--active': match.url === ConfigPath,
+              })}
+            >
+              <Link to={ConfigPath}>Overview</Link>
+            </li>
+            <li
+              className={classNames('co-m-horizontal-nav__menu-item', {
+                'co-m-horizontal-nav-item--active': match.url === YAMLPath,
+              })}
+            >
+              <Link to={YAMLPath}>YAML</Link>
+            </li>
+          </>
+        )}
+      </ul>
       <Switch>
         <Route path="/monitoring/alerts" exact component={AlertsPage} />
         <Route path="/monitoring/silences" exact component={SilencesPage} />

@@ -12,10 +12,14 @@ import {
   useAnchor,
   WithDragNodeProps,
   Layer,
-  useSvgAnchor,
+  useHover,
+  createSvgIdUrl,
+  useCombineRefs,
 } from '@console/topology';
 import SvgBoxedText from '../../../svg/SvgBoxedText';
 import Decorator from '../../../topology/shapes/Decorator';
+import RevisionTrafficSourceAnchor from '../anchors/RevisionTrafficSourceAnchor';
+import NodeShadows, { NODE_SHADOW_FILTER_ID, NODE_SHADOW_FILTER_ID_HOVER } from '../NodeShadows';
 
 import './KnativeService.scss';
 
@@ -27,6 +31,7 @@ export type EventSourceProps = {
   WithDragNodeProps &
   WithContextMenuProps;
 
+const DECORATOR_RADIUS = 13;
 const KnativeService: React.FC<EventSourceProps> = ({
   element,
   selected,
@@ -36,16 +41,28 @@ const KnativeService: React.FC<EventSourceProps> = ({
   dragging,
   regrouping,
 }) => {
-  const trafficAnchor = useSvgAnchor(AnchorEnd.source, 'revision-traffic');
+  const [hover, hoverRef] = useHover();
+  const [innerHover, innerHoverRef] = useHover();
+  const nodeRefs = useCombineRefs(innerHoverRef, dragNodeRef);
+  const { data } = element.getData();
+  const hasDataUrl = !!data.url;
+  useAnchor(
+    React.useCallback(
+      (node: Node) => new RevisionTrafficSourceAnchor(node, hasDataUrl ? DECORATOR_RADIUS : 0),
+      [hasDataUrl],
+    ),
+    AnchorEnd.source,
+    'revision-traffic',
+  );
   useAnchor(RectAnchor);
   const { x, y, width, height } = element.getBounds();
-  const { data } = element.getData();
 
   return (
-    <g onClick={onSelect} onContextMenu={onContextMenu}>
+    <g ref={hoverRef} onClick={onSelect} onContextMenu={onContextMenu}>
+      <NodeShadows />
       <Layer id={dragging && regrouping ? undefined : 'groups2'}>
         <rect
-          ref={dragNodeRef}
+          ref={nodeRefs}
           className={cx('odc-knative-service', {
             'is-selected': selected,
             'is-dragging': dragging,
@@ -56,25 +73,19 @@ const KnativeService: React.FC<EventSourceProps> = ({
           height={height}
           rx="5"
           ry="5"
+          filter={createSvgIdUrl(
+            hover || innerHover || dragging ? NODE_SHADOW_FILTER_ID_HOVER : NODE_SHADOW_FILTER_ID,
+          )}
         />
       </Layer>
-      {data.url ? (
+      {hasDataUrl && (
         <Tooltip key="route" content="Open URL" position={TooltipPosition.right}>
-          <Decorator
-            circleRef={trafficAnchor}
-            x={x + width}
-            y={y}
-            radius={13}
-            href={data.url}
-            external
-          >
+          <Decorator x={x + width} y={y} radius={DECORATOR_RADIUS} href={data.url} external>
             <g transform="translate(-6.5, -6.5)">
-              <ExternalLinkAltIcon style={{ fontSize: 13 }} alt="Open URL" />
+              <ExternalLinkAltIcon style={{ fontSize: DECORATOR_RADIUS }} alt="Open URL" />
             </g>
           </Decorator>
         </Tooltip>
-      ) : (
-        <circle ref={trafficAnchor} cx={width} cy={0} r={0} fill="none" />
       )}
       {(data.kind || element.getLabel()) && (
         <SvgBoxedText

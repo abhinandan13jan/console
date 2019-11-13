@@ -1,6 +1,7 @@
+import * as _ from 'lodash';
 import {
   stopPipelineRun,
-  rerunPipeline,
+  rerunPipelineAndRedirect,
   reRunPipelineRun,
   startPipeline,
   getPipelineRunData,
@@ -13,6 +14,10 @@ export const actionPipelines: Pipeline[] = [
     apiVersion: 'abhiapi/v1',
     kind: 'Pipeline',
     metadata: { name: 'sansa-stark', namespace: 'corazon' },
+    spec: {
+      params: [{ name: 'APP_NAME', description: 'Described Param', default: 'default-app-name' }],
+      tasks: [],
+    },
   },
   {
     apiVersion: 'abhiapi/v1',
@@ -40,7 +45,7 @@ export const actionPipelineRuns: PipelineRun[] = [
 
 describe('PipelineAction testing rerunPipeline create correct labels and callbacks', () => {
   it('expect label to be "Start Last Run" when latestRun is available', () => {
-    const rerunAction = rerunPipeline(PipelineRunModel, actionPipelineRuns[0]);
+    const rerunAction = rerunPipelineAndRedirect(PipelineRunModel, actionPipelineRuns[0]);
     expect(rerunAction.label).toBe('Start Last Run');
     expect(rerunAction.callback).not.toBeNull();
   });
@@ -92,5 +97,13 @@ describe('PipelineAction testing getPipelineRunData', () => {
   it('expect pipeline run data to be returned when only PipelineRun argument is passed', () => {
     const runData = getPipelineRunData(null, actionPipelineRuns[0]);
     expect(runData).not.toBeNull();
+  });
+
+  it('expect params to not have default key in the pipeline run data', () => {
+    const runData = getPipelineRunData(actionPipelines[0]);
+    const { params } = runData.spec;
+    expect(params[0].name).toBe('APP_NAME');
+    expect(params[0].value).toBe('default-app-name');
+    expect(_.has(params[0], 'default')).toBeFalsy();
   });
 });

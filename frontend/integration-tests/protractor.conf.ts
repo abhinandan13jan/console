@@ -1,5 +1,6 @@
 import { Config, browser, logging } from 'protractor';
 import { execSync } from 'child_process';
+import { promise as webdriverpromise } from 'selenium-webdriver';
 import * as HtmlScreenshotReporter from 'protractor-jasmine2-screenshot-reporter';
 import * as _ from 'lodash';
 import { TapReporter, JUnitXmlReporter } from 'jasmine-reporters';
@@ -87,10 +88,6 @@ const testSuites = {
     'tests/performance.scenario.ts',
     'tests/monitoring.scenario.ts',
     'tests/crd-extensions.scenario.ts',
-    '../packages/operator-lifecycle-manager/integration-tests/scenarios/descriptors.scenario.ts',
-    '../packages/operator-lifecycle-manager/integration-tests/scenarios/operator-hub.scenario.ts',
-    '../packages/operator-lifecycle-manager/integration-tests/scenarios/global-installmode.scenario.ts',
-    '../packages/operator-lifecycle-manager/integration-tests/scenarios/single-installmode.scenario.ts',
   ]),
   release: suite([
     'tests/crud.scenario.ts',
@@ -113,7 +110,6 @@ const testSuites = {
     'tests/filter.scenario.ts',
     'tests/modal-annotations.scenario.ts',
     'tests/deploy-image.scenario.ts',
-    'tests/operator-hub/operator-hub.scenario.ts',
     'tests/developer-catalog.scenario.ts',
     'tests/monitoring.scenario.ts',
     'tests/devconsole/dev-perspective.scenario.ts',
@@ -122,11 +118,6 @@ const testSuites = {
   ]),
   clusterSettings: suite(['tests/cluster-settings.scenario.ts']),
   login: ['tests/login.scenario.ts'],
-  // TODO(vojtech): move to dev-console package, with suite() mapper applied automatically
-  devconsole: [
-    'tests/devconsole/dev-perspective.scenario.ts',
-    'tests/devconsole/git-import-flow.scenario.ts',
-  ],
 };
 
 export const config: Config = {
@@ -257,4 +248,21 @@ export const create = (obj) => {
   writeFileSync(filename, JSON.stringify(obj));
   execSync(`kubectl create -f ${filename}`);
   execSync(`rm ${filename}`);
+};
+
+// Retry an action to avoid StaleElementReferenceErrors.
+export const retry = async <T>(
+  fn: () => webdriverpromise.Promise<T>,
+  retries = 3,
+  interval = 1000,
+): webdriverpromise.Promise<T> => {
+  try {
+    return await fn();
+  } catch (e) {
+    if (!retries) {
+      throw e;
+    }
+    await new Promise((r) => setTimeout(r, interval));
+    return retry(fn, retries - 1, interval * 2);
+  }
 };

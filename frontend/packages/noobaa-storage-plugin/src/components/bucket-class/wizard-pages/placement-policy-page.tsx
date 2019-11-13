@@ -23,10 +23,11 @@ const PlacementPolicyPage: React.FC<PlacementPolicyPageProps> = ({ dispatch, sta
           isInline
           variant="info"
           title="What is a Placement Policy?"
+          className="nb-create-bc-step-page__info"
           action={<AlertActionCloseButton onClose={() => setShowHelp(false)} />}
         >
           <p>
-            Data placement capabilities are builtas a multi-layer structure, here are the layers
+            Data placement capabilities are built as a multi-layer structure, here are the layers
             bottom up:
           </p>
           <ul>
@@ -34,14 +35,14 @@ const PlacementPolicyPage: React.FC<PlacementPolicyPageProps> = ({ dispatch, sta
               Spread Tier - list of backing-stores, aggregates the storage of multiple stores.
             </li>
             <li>
-              Mirroring Tier - list of spread-layers, async-mirroring to all amrrors with locality
-              optimization
+              Mirroring Tier - list of spread-layers, async-mirroring to all mirrors with locality
+              optimization.
             </li>
           </ul>
         </Alert>
       )}
       <Form className="nb-create-bc-step-page-form">
-        <Title size="xl" headingLevel="h2">
+        <Title size="xl" headingLevel="h2" className="nb-bc-step-page-form__title">
           Tier 1 - Policy Type
         </Title>
         <Radio
@@ -82,7 +83,7 @@ const PlacementPolicyPage: React.FC<PlacementPolicyPageProps> = ({ dispatch, sta
       )}
       {showTier2 && (
         <Form className="nb-create-bc-step-page-form">
-          <Title headingLevel="h2" size="xl">
+          <Title headingLevel="h2" size="xl" className="nb-bc-step-page-form__title">
             Tier 2 - Policy type{' '}
             <Button
               variant="link"

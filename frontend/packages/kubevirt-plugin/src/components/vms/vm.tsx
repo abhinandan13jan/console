@@ -27,6 +27,8 @@ import { getVMStatus } from '../../statuses/vm/vm';
 import { vmStatusFilter } from './table-filters';
 import { menuActions } from './menu-actions';
 
+import './vm.scss';
+
 const tableColumnClasses = [
   classNames('col-lg-4', 'col-md-4', 'col-sm-6', 'col-xs-6'),
   classNames('col-lg-4', 'col-md-4', 'hidden-sm', 'hidden-xs'),
@@ -70,11 +72,11 @@ const VMRow: React.FC<VMRowProps> = ({
   const name = getName(vm);
   const namespace = getNamespace(vm);
   const uid = getUID(vm);
-  const vmStatus = getVMStatus(vm, pods, migrations);
   const lookupID = getBasicID(vm);
 
   const migration = migrationLookup[lookupID];
   const vmi = vmiLookup[lookupID];
+  const vmStatus = getVMStatus({ vm, vmi, pods, migrations });
 
   return (
     <TableRow id={uid} index={index} trKey={key} style={style}>
@@ -85,7 +87,7 @@ const VMRow: React.FC<VMRowProps> = ({
         <ResourceLink kind={NamespaceModel.kind} name={namespace} title={namespace} />
       </TableData>
       <TableData className={dimensify()}>
-        <VMStatus vm={vm} pods={pods} migrations={migrations} />
+        <VMStatus vm={vm} vmi={vmi} pods={pods} migrations={migrations} />
       </TableData>
       <TableData className={dimensify(true)}>
         <Kebab
@@ -107,22 +109,24 @@ const VMRow: React.FC<VMRowProps> = ({
 const VMList: React.FC<React.ComponentProps<typeof Table> & VMListProps> = (props) => {
   const { resources } = props;
   return (
-    <Table
-      {...props}
-      aria-label={VirtualMachineModel.labelPlural}
-      Header={VMHeader}
-      Row={VMRow}
-      virtualize
-      customData={{
-        pods: getLoadedData(resources.pods, []),
-        migrations: getLoadedData(resources.migrations, []),
-        vmiLookup: createLookup(resources.vmis, getBasicID),
-        migrationLookup: createLookup(
-          resources.migrations,
-          (m) => isMigrating(m) && `${getNamespace(m)}-${getMigrationVMIName(m)}`,
-        ),
-      }}
-    />
+    <div className="kubevirt-vm-list">
+      <Table
+        {...props}
+        aria-label={VirtualMachineModel.labelPlural}
+        Header={VMHeader}
+        Row={VMRow}
+        virtualize
+        customData={{
+          pods: getLoadedData(resources.pods, []),
+          migrations: getLoadedData(resources.migrations, []),
+          vmiLookup: createLookup(resources.vmis, getBasicID),
+          migrationLookup: createLookup(
+            resources.migrations,
+            (m) => isMigrating(m) && `${getNamespace(m)}-${getMigrationVMIName(m)}`,
+          ),
+        }}
+      />
+    </div>
   );
 };
 

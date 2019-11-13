@@ -48,20 +48,20 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ state }) => {
           <Title size="md" headingLevel="h5">
             Tier 1: {tier1Policy}
           </Title>
-          <p>Selected BackingStore: {tier1BackingStore}</p>
+          <p>Selected BackingStore: {tier1BackingStore.join(', ')}</p>
         </div>
         {tier2Policy && (
           <>
             <Title size="md" headingLevel="h5">
               Tier 2: {tier2Policy}
             </Title>
-            <p>Selected BackingStore: {tier2BackingStore}</p>
+            <p>Selected BackingStore: {tier2BackingStore.join(', ')}</p>
           </>
         )}
       </div>
       {isLoading && <LoadingInline />}
       {!!error && (
-        <Alert variant="danger" title="Error">
+        <Alert variant="danger" title="Error" isInline>
           {error}
         </Alert>
       )}
