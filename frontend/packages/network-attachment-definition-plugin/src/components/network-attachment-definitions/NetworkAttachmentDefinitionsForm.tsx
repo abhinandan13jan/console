@@ -59,12 +59,9 @@ const buildConfig = (name, networkType, typeParamsData): NetworkAttachmentDefini
 };
 
 const getResourceName = (networkType, typeParamsData): string => {
-  const resourceName =
-    networkType === 'cnv-bridge'
-      ? _.get(typeParamsData, 'bridge.value', '')
-      : _.get(typeParamsData, 'resourceName.value', '');
-
-  return `bridge.network.kubevirt.io/${resourceName}`;
+  return networkType === 'cnv-bridge'
+    ? `bridge.network.kubevirt.io/${_.get(typeParamsData, 'bridge.value', '')}`
+    : `openshift.io/${_.get(typeParamsData, 'resourceName.value', '')}`;
 };
 
 const createNetAttachDef = (
@@ -310,8 +307,10 @@ const mapStateToProps = ({ k8s }) => {
 
   return {
     // FIXME: These should be feature flags.
-    hasSriovNetNodePolicyCRD:
-      !kindsInFlight && !!k8sModels.get(referenceForModel(SriovNetworkNodePolicyModel)),
+    // TODO: Change back when ready to add back SR-IOV support
+    // hasSriovNetNodePolicyCRD:
+    //   !kindsInFlight && !!k8sModels.get(referenceForModel(SriovNetworkNodePolicyModel)),
+    hasSriovNetNodePolicyCRD: false,
     hasHyperConvergedCRD: !kindsInFlight && !!k8sModels.get(referenceForModel(HyperConvergedModel)),
   };
 };
