@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import { history, resourcePathFromModel, KebabAction } from '@console/internal/components/utils';
-import { k8sCreate, K8sKind, k8sUpdate } from '@console/internal/module/k8s';
+import { k8sCreate, K8sKind, k8sUpdate, k8sGet } from '@console/internal/module/k8s';
 import { errorModal } from '@console/internal/components/modals';
 import { PipelineRunModel } from '../models';
 import startPipelineModal from '../components/pipelines/pipeline-form/StartPipelineModal';
@@ -175,10 +175,17 @@ export const stopPipelineRun: KebabAction = (kind: K8sKind, pipelineRun: Pipelin
   return {
     label: 'Stop',
     callback: () => {
-      k8sUpdate(PipelineRunModel, {
-        ...pipelineRun,
-        spec: { ...pipelineRun.spec, status: 'PipelineRunCancelled' },
-      });
+      // Fetching the latest resourceVersion for the Pipelinerun to avoid 409 conflict
+      k8sGet(PipelineRunModel, pipelineRun.metadata.name, pipelineRun.metadata.namespace)
+        .then((latestPLR) =>
+          k8sUpdate(PipelineRunModel, {
+            ...latestPLR,
+            spec: { ...pipelineRun.spec, status: 'PipelineRunCancelled' },
+          }),
+        )
+        .catch(
+          (error) => console.error('The following error occured while fetching PipelineRun', error), // eslint-disable-line no-console
+        );
     },
     hidden: !(pipelineRun && pipelineRunFilterReducer(pipelineRun) === 'Running'),
     accessReview: {
