@@ -110,6 +110,7 @@ const ImageStreamTagDropdown: React.FC = () => {
       name="imageStream.tag"
       label="Tag"
       items={imageStreamTagList}
+      autoComplete
       key={imageStream.image}
       title={
         imageStream.tag ||

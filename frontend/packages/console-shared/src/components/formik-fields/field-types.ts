@@ -41,6 +41,7 @@ export interface SearchInputFieldProps extends InputFieldProps {
 export interface DropdownFieldProps extends FieldProps {
   items?: object;
   selectedKey?: string;
+  autoComplete?: boolean;
   title?: React.ReactNode;
   fullWidth?: boolean;
   disabled?: boolean;
