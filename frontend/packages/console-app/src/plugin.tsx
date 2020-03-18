@@ -1,9 +1,13 @@
 import * as React from 'react';
+import * as _ from 'lodash';
 import { CogsIcon } from '@patternfly/react-icons';
 import { FLAGS } from '@console/shared/src/constants';
+import { FLAG_DEVWORKSPACE } from './consts';
 import {
   Plugin,
   Perspective,
+  ModelFeatureFlag,
+  ModelDefinition,
   DashboardsOverviewResourceActivity,
   DashboardsOverviewHealthURLSubsystem,
   DashboardsOverviewHealthPrometheusSubsystem,
@@ -40,9 +44,12 @@ import {
   getClusterUpdateTimestamp,
   isClusterUpdateActivity,
 } from './components/dashboards-page/activity';
+import * as models from './models';
 
 type ConsumedExtensions =
   | Perspective
+  | ModelDefinition
+  | ModelFeatureFlag
   | DashboardsOverviewResourceActivity
   | DashboardsOverviewHealthURLSubsystem<any>
   | DashboardsOverviewHealthPrometheusSubsystem
@@ -50,6 +57,19 @@ type ConsumedExtensions =
   | DashboardsOverviewHealthOperator<ClusterOperator>;
 
 const plugin: Plugin<ConsumedExtensions> = [
+  {
+    type: 'ModelDefinition',
+    properties: {
+      models: _.values(models),
+    },
+  },
+  {
+    type: 'FeatureFlag/Model',
+    properties: {
+      model: models.WorkspaceModel,
+      flag: FLAG_DEVWORKSPACE,
+    },
+  },
   {
     type: 'Perspective',
     properties: {

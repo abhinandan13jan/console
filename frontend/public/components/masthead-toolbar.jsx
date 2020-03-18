@@ -23,6 +23,7 @@ import {
 import classNames from 'classnames';
 import { FLAGS, YellowExclamationTriangleIcon } from '@console/shared';
 import { formatNamespacedRouteForResource } from '@console/shared/src/utils';
+import CloudshellIcon from '@console/app/src/components/cloud-shell/CloudshellIcon';
 import * as UIActions from '../actions/ui';
 import { connectToFlags, flagPending, featureReducerName } from '../reducers/features';
 import { authSvc } from '../module/auth';
@@ -523,7 +524,14 @@ class MastheadToolbarContents_ extends React.Component {
       showAboutModal,
       statuspageData,
     } = this.state;
-    const { consoleLinks, cv, drawerToggle, notificationsRead, canAccessNS } = this.props;
+    const {
+      consoleLinks,
+      cv,
+      drawerToggle,
+      notificationsRead,
+      canAccessNS,
+      terminalToggle,
+    } = this.props;
     const launchActions = this._launchActions();
     const alertAccess = canAccessNS && !!window.SERVER_FLAGS.prometheusBaseURL;
     return (
@@ -572,6 +580,7 @@ class MastheadToolbarContents_ extends React.Component {
                 <PlusCircleIcon className="co-masthead-icon" />
               </Button>
             </ToolbarItem>
+            <CloudshellIcon terminalToggle={terminalToggle} />
             <ToolbarItem>
               <ApplicationLauncher
                 aria-label="Help menu"
@@ -629,6 +638,7 @@ const mastheadToolbarStateToProps = (state) => ({
 
 const MastheadToolbarContents = connect(mastheadToolbarStateToProps, {
   drawerToggle: UIActions.notificationDrawerToggleExpanded,
+  terminalToggle: UIActions.terminalDrawerToggleExpanded,
 })(
   connectToFlags(
     FLAGS.AUTH_ENABLED,

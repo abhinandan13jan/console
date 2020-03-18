@@ -1,21 +1,29 @@
 import * as React from 'react';
-import { Button } from '@patternfly/react-core';
-import CloudShellBody from './CloudShellBody';
+import { connect } from 'react-redux';
+import { RootState } from '@console/internal/redux';
+import * as UIActions from '@console/internal/actions/ui';
 import CloudShellDrawer from './CloudShellDrawer';
+import CloudShellTerminal from './CloudshellTerminal';
 
-const CloudShell: React.FC = () => {
-  const [open, setOpen] = React.useState(false);
-  return (
-    <>
-      {/* Remove this button once actual terminal is in place */}
-      <Button variant="control" onClick={() => setOpen(!open)}>
-        Open Drawer
-      </Button>
-      <CloudShellDrawer open={open} onClose={() => setOpen(false)}>
-        <CloudShellBody />
-      </CloudShellDrawer>
-    </>
-  );
+type CloudshellContentProps = {
+  isTerminalExpanded: boolean;
+  toggleTerminal: any;
 };
 
-export default CloudShell;
+const CloudshellContent: React.FC<CloudshellContentProps> = ({
+  isTerminalExpanded,
+  toggleTerminal,
+}) => (
+  <CloudShellDrawer open={isTerminalExpanded} onClose={() => toggleTerminal()}>
+    <CloudShellTerminal />
+  </CloudShellDrawer>
+);
+
+const cloudshellStateToProps = ({ UI }: RootState) => ({
+  isTerminalExpanded: UI.getIn(['terminal', 'isExpanded']),
+});
+
+const cloudlPropsToState = {
+  toggleTerminal: UIActions.terminalDrawerToggleExpanded,
+};
+export default connect(cloudshellStateToProps, cloudlPropsToState)(CloudshellContent);

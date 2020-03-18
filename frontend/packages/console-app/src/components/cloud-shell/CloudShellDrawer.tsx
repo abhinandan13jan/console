@@ -59,20 +59,18 @@ const CloudShellDrawer: React.FC<CloudShellDrawerProps> = ({ open, children, onC
       </FlexItem>
     </Flex>
   );
-  return (
-    open && (
-      <Drawer
-        open={expanded}
-        height={height}
-        header={header}
-        maxHeight={`calc(100vh - ${getMastheadHeight()}px)`}
-        onChange={handleChange}
-        resizable
-      >
-        {children}
-      </Drawer>
-    )
-  );
+  return open ? (
+    <Drawer
+      open={expanded}
+      height={height}
+      header={header}
+      maxHeight={`calc(100vh - ${getMastheadHeight()}px)`}
+      onChange={handleChange}
+      resizable
+    >
+      {children}
+    </Drawer>
+  ) : null;
 };
 
 export default CloudShellDrawer;

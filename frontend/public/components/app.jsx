@@ -2,10 +2,12 @@ import * as _ from 'lodash-es';
 import * as React from 'react';
 import { render } from 'react-dom';
 import { Helmet } from 'react-helmet';
+
 import { Provider } from 'react-redux';
 import { Route, Router } from 'react-router-dom';
 // AbortController is not supported in some older browser versions
 import 'abort-controller/polyfill';
+import CloudShell from '@console/app/src/components/cloud-shell/CloudShell';
 
 import store from '../redux';
 import { detectFeatures } from '../actions/features';
@@ -159,6 +161,7 @@ class App extends React.PureComponent {
             </ConnectedNotificationDrawer>
           </Firehose>
         </Page>
+        <CloudShell />
         <ConsoleNotifier location="BannerBottom" />
       </>
     );
