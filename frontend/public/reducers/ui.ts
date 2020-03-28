@@ -238,9 +238,6 @@ export default (state: UIState, action: UIAction): UIState => {
     case ActionType.NotificationDrawerToggleRead:
       return state.setIn(['notifications', 'isRead'], !state.getIn(['notifications', 'isRead']));
 
-    case ActionType.TerminalDrawerToggleExpanded:
-      return state.setIn(['terminal', 'isExpanded'], !state.getIn(['terminal', 'isExpanded']));
-
     case ActionType.QueryBrowserAddQuery:
       return state.setIn(
         ['queryBrowser', 'queries'],

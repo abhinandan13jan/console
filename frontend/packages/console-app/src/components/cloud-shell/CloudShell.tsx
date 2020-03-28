@@ -1,29 +1,34 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
+import { Dispatch } from 'redux';
 import { RootState } from '@console/internal/redux';
-import * as UIActions from '@console/internal/actions/ui';
+import { isCloudShellExpanded } from '../../redux/reducers/cloud-shell-reducer';
+import { toggleCloudShellExpanded } from '../../redux/actions/cloud-shell-actions';
 import CloudShellDrawer from './CloudShellDrawer';
-import CloudShellTerminal from './CloudshellTerminal';
+import CloudShellTerminal from './CloudShellTerminal';
 
-type CloudshellContentProps = {
-  isTerminalExpanded: boolean;
-  toggleTerminal: any;
+type StateProps = {
+  open?: boolean;
 };
 
-const CloudshellContent: React.FC<CloudshellContentProps> = ({
-  isTerminalExpanded,
-  toggleTerminal,
-}) => (
-  <CloudShellDrawer open={isTerminalExpanded} onClose={() => toggleTerminal()}>
+type DispatchProps = {
+  onClose: () => void;
+};
+
+type CloudShellProps = StateProps & DispatchProps;
+
+const CloudShell: React.FC<CloudShellProps> = ({ open, onClose }) => (
+  <CloudShellDrawer open={open} onClose={onClose}>
     <CloudShellTerminal />
   </CloudShellDrawer>
 );
 
-const cloudshellStateToProps = ({ UI }: RootState) => ({
-  isTerminalExpanded: UI.getIn(['terminal', 'isExpanded']),
+const stateToProps = (state: RootState): StateProps => ({
+  open: isCloudShellExpanded(state),
 });
 
-const cloudlPropsToState = {
-  toggleTerminal: UIActions.terminalDrawerToggleExpanded,
-};
-export default connect(cloudshellStateToProps, cloudlPropsToState)(CloudshellContent);
+const dispatchToProps = (dispatch: Dispatch): DispatchProps => ({
+  onClose: () => dispatch(toggleCloudShellExpanded()),
+});
+
+export default connect<StateProps, DispatchProps>(stateToProps, dispatchToProps)(CloudShell);

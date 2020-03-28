@@ -1,12 +1,13 @@
 import * as React from 'react';
 import { Tooltip, Flex, FlexItem, FlexModifiers, Button } from '@patternfly/react-core';
 import { CloseIcon, ExternalLinkAltIcon } from '@patternfly/react-icons';
-import { Drawer } from '@console/shared';
+import Drawer from '@console/shared/src/components/drawer/Drawer';
 import MinimizeRestoreButton from './MinimizeRestoreButton';
+
 import './CloudShellDrawer.scss';
 
-export type CloudShellDrawerProps = {
-  open: boolean;
+type CloudShellDrawerProps = {
+  open?: boolean;
   onClose: () => void;
 };
 
@@ -18,7 +19,7 @@ const getMastheadHeight = (): number => {
 };
 
 const CloudShellDrawer: React.FC<CloudShellDrawerProps> = ({ open, children, onClose }) => {
-  const [height, setHeight] = React.useState(318);
+  const [height, setHeight] = React.useState(326);
   const [expanded, setExpanded] = React.useState<boolean>(true);
   const onMRButtonClick = (expandedState: boolean) => {
     setExpanded(!expandedState);
@@ -28,16 +29,14 @@ const CloudShellDrawer: React.FC<CloudShellDrawerProps> = ({ open, children, onC
     setHeight(resizeHeight);
   };
   const header = (
-    <Flex>
-      <FlexItem className="ocs-terminal-drawer__heading">
-        <b>Command Line Terminal</b>
-      </FlexItem>
+    <Flex style={{ flexGrow: 1 }}>
+      <FlexItem className="co-cloud-shell-drawer__heading">Command Line Terminal</FlexItem>
       <FlexItem breakpointMods={[{ modifier: FlexModifiers['align-right'] }]}>
         <Tooltip content="Open terminal in new tab">
           <Button
             variant="plain"
             component="a"
-            // change this once we can open teeminal in new tab
+            // change this once we can open terminal in new tab
             href={null}
             target="_blank"
             aria-label="Open terminal in new tab"
@@ -52,7 +51,7 @@ const CloudShellDrawer: React.FC<CloudShellDrawerProps> = ({ open, children, onC
           onClick={onMRButtonClick}
         />
         <Tooltip content="Close terminal">
-          <Button variant="plain" type="button" onClick={onClose} aria-label="Close Terminal">
+          <Button variant="plain" type="button" onClick={onClose} aria-label="Close terminal">
             <CloseIcon />
           </Button>
         </Tooltip>

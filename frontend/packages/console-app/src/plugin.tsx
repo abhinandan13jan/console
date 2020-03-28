@@ -13,6 +13,7 @@ import {
   DashboardsOverviewHealthPrometheusSubsystem,
   DashboardsOverviewInventoryItem,
   DashboardsOverviewHealthOperator,
+  ReduxReducer,
 } from '@console/plugin-sdk';
 import {
   ClusterVersionModel,
@@ -44,6 +45,7 @@ import {
   getClusterUpdateTimestamp,
   isClusterUpdateActivity,
 } from './components/dashboards-page/activity';
+import reducer from './redux/reducer';
 import * as models from './models';
 
 type ConsumedExtensions =
@@ -54,7 +56,8 @@ type ConsumedExtensions =
   | DashboardsOverviewHealthURLSubsystem<any>
   | DashboardsOverviewHealthPrometheusSubsystem
   | DashboardsOverviewInventoryItem
-  | DashboardsOverviewHealthOperator<ClusterOperator>;
+  | DashboardsOverviewHealthOperator<ClusterOperator>
+  | ReduxReducer;
 
 const plugin: Plugin<ConsumedExtensions> = [
   {
@@ -182,6 +185,13 @@ const plugin: Plugin<ConsumedExtensions> = [
     },
     flags: {
       required: [FLAGS.CLUSTER_VERSION],
+    },
+  },
+  {
+    type: 'ReduxReducer',
+    properties: {
+      namespace: 'console',
+      reducer,
     },
   },
 ];

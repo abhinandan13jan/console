@@ -36,7 +36,6 @@ export enum ActionType {
   ToggleMonitoringGraphs = 'monitoringToggleGraphs',
   NotificationDrawerToggleExpanded = 'notificationDrawerExpanded',
   NotificationDrawerToggleRead = 'notificationDrawerRead',
-  TerminalDrawerToggleExpanded = 'terminalDrawerExpanded',
   QueryBrowserAddQuery = 'queryBrowserAddQuery',
   QueryBrowserDeleteAllQueries = 'queryBrowserDeleteAllQueries',
   QueryBrowserDeleteQuery = 'queryBrowserDeleteQuery',
@@ -309,7 +308,6 @@ export const monitoringToggleGraphs = () => action(ActionType.ToggleMonitoringGr
 export const notificationDrawerToggleExpanded = () =>
   action(ActionType.NotificationDrawerToggleExpanded);
 export const notificationDrawerToggleRead = () => action(ActionType.NotificationDrawerToggleRead);
-export const terminalDrawerToggleExpanded = () => action(ActionType.TerminalDrawerToggleExpanded);
 export const queryBrowserAddQuery = () => action(ActionType.QueryBrowserAddQuery);
 export const queryBrowserDeleteAllQueries = () => action(ActionType.QueryBrowserDeleteAllQueries);
 export const queryBrowserDismissNamespaceAlert = () =>
@@ -393,7 +391,6 @@ const uiActions = {
   setNodeMetrics,
   notificationDrawerToggleExpanded,
   notificationDrawerToggleRead,
-  terminalDrawerToggleExpanded,
 };
 
 export type UIAction = Action<typeof uiActions>;
