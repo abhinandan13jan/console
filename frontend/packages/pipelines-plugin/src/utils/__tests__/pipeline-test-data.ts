@@ -290,3 +290,76 @@ export const mockRunDurationTest = [
   pipelineTestData[PipelineExampleNames.WORKSPACE_PIPELINE].pipelineRuns[DataState.SUCCESS],
   pipelineTestData[PipelineExampleNames.CLUSTER_PIPELINE].pipelineRuns[DataState.SUCCESS],
 ];
+
+export const pipelineWithWorkspace: PipelineKind[] = [
+  {
+    apiVersion: 'tekton.dev/v1alpha1',
+    kind: 'Pipeline',
+    metadata: {
+      name: 'tutorial-pipeline',
+    },
+    spec: {
+      params: [
+        {
+          name: 'APP_NAME',
+          description: 'Application name',
+          default: 'default-app-name',
+        },
+      ],
+      resources: [
+        {
+          name: 'source-repo',
+          type: 'git',
+        },
+        {
+          name: 'web-image',
+          type: 'image',
+        },
+      ],
+      tasks: [
+        {
+          name: 'start-app',
+          taskRef: {
+            name: 'start-app',
+          },
+        },
+      ],
+      workspaces: [],
+    },
+  },
+  {
+    apiVersion: 'tekton.dev/v1alpha1',
+    kind: 'Pipeline',
+    metadata: {
+      name: 'tutorial-pipeline',
+    },
+    spec: {
+      params: [
+        {
+          name: 'APP_NAME',
+          description: 'Application name',
+          default: 'default-app-name',
+        },
+      ],
+      resources: [
+        {
+          name: 'source-repo',
+          type: 'git',
+        },
+        {
+          name: 'web-image',
+          type: 'image',
+        },
+      ],
+      tasks: [
+        {
+          name: 'start-app',
+          taskRef: {
+            name: 'start-app',
+          },
+        },
+      ],
+      workspaces: [{ name: 'workspace1' }, { name: 'workspace2' }],
+    },
+  },
+];
