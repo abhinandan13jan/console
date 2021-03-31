@@ -28,12 +28,20 @@ export const pipelineResourceTypeSelections = {
 };
 
 export enum VolumeTypes {
-  EmptyDirectory = 'Empty Directory',
-  ConfigMap = 'Config Map',
-  Secret = 'Secret',
-  PVC = 'PersistentVolumeClaim',
-  VolumeClaimTemplate = 'VolumeClaimTemplate',
+  EmptyDirectory = 'emptyDirectory',
+  ConfigMap = 'configMap',
+  Secret = 'secret',
+  PVC = 'pvc',
+  VolumeClaimTemplate = 'volumeClaimTemplate',
 }
+
+export const volumeTypeOptions: { [type in VolumeTypes]: string } = {
+  [VolumeTypes.EmptyDirectory]: 'Empty Directory',
+  [VolumeTypes.ConfigMap]: 'Config Map',
+  [VolumeTypes.Secret]: 'Secret',
+  [VolumeTypes.PVC]: 'PersistentVolumeClaim',
+  [VolumeTypes.VolumeClaimTemplate]: 'VolumeClaimTemplate',
+};
 
 export enum SecretAnnotationId {
   Git = 'git',

@@ -6,7 +6,7 @@ import { SecretModel, ConfigMapModel } from '@console/internal/models';
 import { DropdownField } from '@console/shared';
 import FormSection from '@console/dev-console/src/components/import/section/FormSection';
 import { Alert } from '@patternfly/react-core';
-import { VolumeTypes } from '../../const';
+import { volumeTypeOptions, VolumeTypes } from '../../const';
 import VolumeClaimTemplateForm from './VolumeClaimTemplateForm';
 import PVCDropdown from './PVCDropdown';
 import MultipleResourceKeySelector from './MultipleResourceKeySelector';
@@ -14,7 +14,7 @@ import { PipelineModalFormWorkspace } from './types';
 import './PipelineWorkspacesSection.scss';
 
 const getVolumeTypeFields = (volumeType: VolumeTypes, index: number, t: TFunction) => {
-  switch (VolumeTypes[volumeType]) {
+  switch (volumeType) {
     case VolumeTypes.Secret: {
       return (
         <MultipleResourceKeySelector
@@ -79,11 +79,11 @@ const PipelineWorkspacesSection: React.FC = () => {
             <DropdownField
               name={`workspaces.${index}.type`}
               label={workspace.name}
-              items={VolumeTypes}
+              items={volumeTypeOptions}
               onChange={(type) =>
                 setFieldValue(
                   `workspaces.${index}.data`,
-                  VolumeTypes[type] === VolumeTypes.EmptyDirectory ? { emptyDir: {} } : {},
+                  type === VolumeTypes.EmptyDirectory ? { emptyDir: {} } : {},
                   // Validation is automatically done by DropdownField useFormikValidationFix
                   false,
                 )
@@ -91,7 +91,7 @@ const PipelineWorkspacesSection: React.FC = () => {
               fullWidth
               required
             />
-            {getVolumeTypeFields(workspace.type as VolumeTypes, index, t)}
+            {getVolumeTypeFields(workspace.type, index, t)}
           </div>
         ))}
       </FormSection>
