@@ -16,19 +16,20 @@ const TaskRunsListPage: React.FC<Omit<
   React.ComponentProps<typeof ListPage>,
   'canCreate' | 'kind' | 'ListComponent' | 'rowFilters'
 > &
-  TaskRunsListPageProps> = ({ hideBadge, showPipelineColumn = true, ...props }) => {
+  TaskRunsListPageProps> = ({ hideBadge, showPipelineColumn = true, namespace, ...props }) => {
   const searchParams = getURLSearchParams();
   const kind = searchParams?.kind;
-  const badge = usePipelineTechPreviewBadge(props.namespace);
+  const badge = usePipelineTechPreviewBadge(namespace);
   return (
     <ListPage
-      {...props}
       customData={{ showPipelineColumn }}
       canCreate={kind?.includes(referenceForModel(TaskRunModel)) ?? false}
       kind={referenceForModel(TaskRunModel)}
       ListComponent={TaskRunsList}
       rowFilters={taskRunFilters}
       badge={hideBadge ? null : badge}
+      namespace={namespace}
+      {...props}
     />
   );
 };
