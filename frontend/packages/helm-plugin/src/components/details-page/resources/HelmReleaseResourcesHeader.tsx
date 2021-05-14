@@ -1,11 +1,18 @@
 import { TFunction } from 'i18next';
+import * as classNames from 'classnames';
 import { sortable } from '@patternfly/react-table';
 
 export const tableColumnClasses = {
-  name: 'col-lg-4 col-md-4 col-sm-4 col-xs-6',
-  type: 'col-lg-2 col-md-2 col-sm-4 col-xs-6',
-  status: 'col-lg-2 col-md-3 col-sm-4 hidden-xs',
-  created: 'col-lg-4 col-md-3 hidden-sm hidden-xs',
+  name: classNames('pf-u-w-33-on-sm', 'pf-u-w-50-on-xs'),
+  type: classNames('pf-u-w-16-on-lg', 'pf-u-w-33-on-sm', 'pf-u-w-50-on-xs'),
+  status: classNames(
+    'pf-m-hidden',
+    'pf-m-visible-on-sm',
+    'pf-u-w-16-on-lg',
+    'pf-u-w-25-on-md',
+    'pf-u-w-33-on-sm',
+  ),
+  created: classNames('pf-m-hidden', 'pf-m-visible-on-md', 'pf-u-w-33-on-lg', 'pf-u-w-25-on-md'),
 };
 
 const HelmReleaseResourcesHeader = (t: TFunction) => () => {

@@ -1,16 +1,17 @@
+import * as classNames from 'classnames';
 import { TFunction } from 'i18next';
 import { sortable } from '@patternfly/react-table';
 import { Kebab } from '@console/internal/components/utils';
 
 export const tableColumnClasses = {
   input: Kebab.columnClass,
-  revision: 'col-lg-1 col-md-3 col-sm-3 col-xs-3',
-  updated: 'col-lg-2 col-md-3 col-sm-5 col-xs-5',
-  status: 'col-lg-1 col-md-2 hidden-sm hidden-xs',
-  chartName: 'col-lg-2 hidden-md hidden-sm hidden-xs',
-  chartVersion: 'col-lg-2 hidden-md hidden-sm hidden-xs',
-  appVersion: 'col-lg-2 hidden-md hidden-sm hidden-xs',
-  description: 'col-lg-2 hidden-md hidden-sm hidden-xs',
+  revision: classNames('pf-u-w-8-on-lg', 'pf-u-w-25-on-xs'),
+  updated: classNames('pf-u-w-16-on-lg', 'pf-u-w-25-on-md', 'pf-u-w-40-on-xs'),
+  status: classNames('pf-m-hidden', 'pf-m-visible-on-md', 'pf-u-w-8-on-lg', 'pf-u-w-16-on-md'),
+  chartName: classNames('pf-m-hidden', 'pf-m-visible-on-lg'),
+  chartVersion: classNames('pf-m-hidden', 'pf-m-visible-on-lg'),
+  appVersion: classNames('pf-m-hidden', 'pf-m-visible-on-lg'),
+  description: classNames('pf-m-hidden', 'pf-m-visible-on-lg'),
 };
 
 const RevisionListHeader = (t: TFunction) => () => {
